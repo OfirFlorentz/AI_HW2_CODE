@@ -30,29 +30,31 @@ class MinimaxPlayer():
         self.board[self.rival_position] = -1
         self.rival_position = loc
 
-    def count_ones(self, board):
-        counter = 0
+    def count_players(self, board):
+        counter1 = 0
+        counter2 = 0
         for i, row in enumerate(board):
             for j, val in enumerate(row):
                 if val == 1:
-                    counter += 1
-                if counter > 1:
-                    print(5)
-        return counter
+                    counter1 += 1
+                if val ==2:
+                    counter2 +=1
+        if counter1 !=1 or counter2 != 1:
+            print(5)
+        return (counter1, counter2)
 
     def make_move(self, time):  # time parameter is not used, we assume we have enough time.
         depth = 1
         ID_start_time = _time()
-        while True:
-            print(depth)
+        while (True):
             copy_self = copy.deepcopy(self)
-            assert self.count_ones(self.board) == 1
+            assert self.count_players(self.board) == (1,1)
             try:
                 best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05,
                                                                           copy.deepcopy(self.board))
             except TimeoutError:
                 break
-            assert self.count_ones(self.board) == 1
+            assert self.count_players(self.board) == (1, 1)
             depth += 1
 
         if best_move is None:
@@ -69,7 +71,7 @@ class MinimaxPlayer():
 
     def rb_minmax(self, depth, time_left, board, my_turn=True):
         start = _time()
-        assert self.count_ones(board) == 1
+        assert self.count_players(board) == (1,1)
         if depth == 0:
             return None, self.state_score(my_turn, board), None
 
@@ -89,14 +91,13 @@ class MinimaxPlayer():
                     board[new_loc] = 1
                     self.loc = new_loc
                     self.available -= 1
-                    _, score, _ = self.rb_minmax(depth-1,  time_left - _time() + start, board, 1-my_turn)
+                    _, score, _ = self.rb_minmax(depth=depth-1,  time_left=time_left - _time() + start, board= board, my_turn=1-my_turn)
                     self.available += 1
-                    # assert -1<= score <= 1
+                    assert self.count_players(board) == (1,1)
                     board[new_loc] = 0
                     if score > max_score or max_score == float('-inf'):
                         best_move, max_score, best_new_loc = d, score, new_loc
                         # print(best_move, max_score, best_new_loc)
-                    assert self.count_ones(board) == 0
             self.loc = prev_loc
             board[self.loc] = 1
             return best_move, max_score, best_new_loc
@@ -104,6 +105,7 @@ class MinimaxPlayer():
 
         else:
             best_move, min_score, best_new_loc = None, float('inf'), None
+            prev_loc = self.rival_position
             prev_loc = self.rival_position
             board[prev_loc] = -1
             for d in self.directions:
@@ -154,8 +156,17 @@ class MinimaxPlayer():
         distance_from_start = abs(self.starting_position[0] - self.loc[0]) + abs(self.starting_position[1] - self.loc[1])
         distance_from_start_opp = abs(self.rival_starting_position[0] - self.rival_position[0])\
                                   + abs(self.rival_starting_position[1] - self.rival_position[1])
-        available_steps = self.bfs(self.loc, copy.deepcopy(board))
-        available_steps_opp = self.bfs(self.rival_position, copy.deepcopy(board))
+        available_steps, found_opp = self.dfs(self.loc, copy.deepcopy(board))
+        available_steps_opp, _ = self.dfs(self.rival_position, copy.deepcopy(board))
+
+        # cant block each other, the one who have more steps win
+        if not found_opp:
+            if available_steps > available_steps_opp + int(my_turn):
+                return 0.999
+            elif available_steps + int(not my_turn) < available_steps_opp :
+                return -0.999
+            return 0
+
 
         # norm
         distance_from_start = distance_from_start / (2*len(board))
@@ -164,13 +175,20 @@ class MinimaxPlayer():
         available_steps = available_steps / (self.available + 0.001)
         available_steps_opp = available_steps_opp / (self.available + 0.001)
 
+
+
         return (available_steps - available_steps_opp + distance_from_start - distance_from_start_opp) / 2
 
-    def bfs(self, loc, board, counter=0):
+    def dfs(self, loc, board, max_length=0, found_opp=False):
         for d in self.directions:
             i = loc[0] + d[0]
             j = loc[1] + d[1]
-            if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
-                board[i][j] = -1
-                counter += self.bfs((i,j), board)
-        return counter
+            if 0 <= i < len(board) and 0 <= j < len(board[0]):
+                if board[i][j] == 0:  # then move is legal
+                    board[i][j] = -1
+                    length, found = self.dfs((i,j), board, found_opp)
+                    max_length = max(max_length,1 + length)
+                    found_opp = found_opp or found
+                elif board[i][j] == 2:
+                    found_opp = True
+        return max_length, found_opp
