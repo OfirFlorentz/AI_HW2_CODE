@@ -10,6 +10,7 @@ class MinimaxPlayer():
         self.starting_position = None
         self.rival_starting_position = None
         self.rival_position = None
+        self.available = 0
 
     def set_game_params(self,board):
         self.board = board
@@ -21,8 +22,8 @@ class MinimaxPlayer():
                 if val == 2:
                     self.rival_position = (i,j)
                     self.rival_starting_position = (i,j)
-                if self.loc is not None and self.rival_position is not None:
-                    break
+                if val == 0:
+                    self.available += 1
 
     def set_rival_move(self, loc):
         self.board[loc] = 2
@@ -61,6 +62,7 @@ class MinimaxPlayer():
         self.board[best_new_loc] = 1
         self.board[self.loc] = -1
         self.loc = best_new_loc
+        self.available -= 2
 
         # print('returning move', best_move)
         return best_move
@@ -86,7 +88,9 @@ class MinimaxPlayer():
                     assert board[new_loc] == 0
                     board[new_loc] = 1
                     self.loc = new_loc
-                    _, score, _ = self.rb_minmax(depth-1,  time_left -_time() + start, board, 1-my_turn)
+                    self.available -= 1
+                    _, score, _ = self.rb_minmax(depth-1,  time_left - _time() + start, board, 1-my_turn)
+                    self.available += 1
                     # assert -1<= score <= 1
                     board[new_loc] = 0
                     if score > max_score or max_score == float('-inf'):
@@ -113,7 +117,9 @@ class MinimaxPlayer():
                     assert board[new_loc] == 0
                     self.rival_position = new_loc
                     board[new_loc] = 2
+                    self.available -= 1
                     _, score, _ = self.rb_minmax(depth-1, time_left -_time() + start, board, 1-my_turn)
+                    self.available += 1
                     # print(score)
                     board[new_loc] = 0
                     if score < min_score or min_score == float('inf'):
@@ -144,11 +150,21 @@ class MinimaxPlayer():
         if not my_turn and num_steps_available_opp == 0:
             return 1
 
+        # get params
         distance_from_start = abs(self.starting_position[0] - self.loc[0]) + abs(self.starting_position[1] - self.loc[1])
         distance_from_start_opp = abs(self.rival_starting_position[0] - self.rival_position[0])\
                                   + abs(self.rival_starting_position[1] - self.rival_position[1])
+        available_steps = self.bfs(self.loc, copy.deepcopy(board))
+        available_steps_opp = self.bfs(self.rival_position, copy.deepcopy(board))
 
-        return (num_steps_available - num_steps_available_opp + distance_from_start - distance_from_start_opp) / (4 + 2*board.size)
+        # norm
+        distance_from_start = distance_from_start / (2*len(board))
+        distance_from_start_opp = distance_from_start_opp / (2*len(board))
+
+        available_steps = available_steps / (self.available + 0.001)
+        available_steps_opp = available_steps_opp / (self.available + 0.001)
+
+        return (available_steps - available_steps_opp + distance_from_start - distance_from_start_opp) / 2
 
     def bfs(self, loc, board, counter=0):
         for d in self.directions:

@@ -10,7 +10,7 @@ import sys, os
 # from PyQt4.QtCore import pyqtRemoveInputHook
 
 class LiveAnimatedGame:
-    def __init__(self, size, block_locations, starts, player_1, player_2, moves='regular', time_to_make_a_move=1):
+    def __init__(self, size, block_locations, starts, player_1, player_2, moves='regular', time_to_make_a_move=0.5):
         assert hasattr(player_1, 'set_game_params')
         assert hasattr(player_2, 'set_game_params')
         assert hasattr(player_1, 'make_move')
