@@ -36,14 +36,13 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
         # print('returning move', best_move)
         return best_move
 
-    def rb_minmax(self, depth, time_left, board, my_turn=True, alpha=-3, beta=3, isRoot=True):
+    def rb_minmax(self, depth, time_left, board, my_turn=True, alpha=float('-inf'), beta=float('inf'), isRoot=True):
         start = _time()
         assert self.count_players(board) == (1,1)
         
         is_final, score = self.is_final(my_turn)
         if is_final:  # no move left
             return None, score, None, None
-        
         if depth == 0:
             score=self.state_score(my_turn, board)
             return None, score, None, None
