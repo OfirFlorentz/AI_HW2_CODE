@@ -41,6 +41,9 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
             return sha256(word.encode()).hexdigest()
         start = _time()
         assert self.count_players(board) == (1,1)
+        is_final, score = self.is_final(my_turn)
+        if is_final:  # no move left
+            return None, score, None, self.score_dict
         if depth == 0:
             score=self.state_score(my_turn, board)
             self.score_dict[hash256(path)]=score
@@ -77,7 +80,7 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
                         
             self.loc = prev_loc
             board[self.loc] = 1
-            self.score_dict[hash256(path)]=max_score
+            self.score_dict[hash256(path)] = max_score
             return best_move, max_score, best_new_loc, self.score_dict
 
 

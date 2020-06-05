@@ -39,14 +39,13 @@ class MinimaxPlayer():
                     counter1 += 1
                 if val ==2:
                     counter2 +=1
-        if counter1 !=1 or counter2 != 1:
-            print(5)
+
         return (counter1, counter2)
 
     def make_move(self, time):  # time parameter is not used, we assume we have enough time.
         depth = 1
         ID_start_time = _time()
-        while (True):
+        while(True):
             copy_self = copy.deepcopy(self)
             assert self.count_players(self.board) == (1,1)
             try:
@@ -72,9 +71,11 @@ class MinimaxPlayer():
     def rb_minmax(self, depth, time_left, board, my_turn=True):
         start = _time()
         assert self.count_players(board) == (1,1)
+        is_final, score = self.is_final(my_turn)
+        if is_final:  # no move left
+            return None, score, None
         if depth == 0:
             return None, self.state_score(my_turn, board), None
-
         if my_turn == 1:
             best_move, max_score, best_new_loc = None, float('-inf'), None
             prev_loc = self.loc
@@ -131,27 +132,6 @@ class MinimaxPlayer():
             return best_move, min_score, best_new_loc
 
     def state_score(self, my_turn, board):
-        num_steps_available = 0
-        num_steps_available_opp = 0
-        for d in self.directions:
-            i = self.loc[0] + d[0]
-            j = self.loc[1] + d[1]
-            if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
-                num_steps_available += 1
-
-            i = self.rival_position[0] + d[0]
-            j = self.rival_position[1] + d[1]
-            if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
-                num_steps_available_opp += 1
-
-        # end of game
-        if num_steps_available == num_steps_available_opp == 0:
-            return 0
-        if my_turn and num_steps_available == 0:
-            return -1
-        if not my_turn and num_steps_available_opp == 0:
-            return 1
-
         # get params
         distance_from_start = abs(self.starting_position[0] - self.loc[0]) + abs(self.starting_position[1] - self.loc[1])
         distance_from_start_opp = abs(self.rival_starting_position[0] - self.rival_position[0])\
@@ -179,6 +159,7 @@ class MinimaxPlayer():
 
         return (available_steps - available_steps_opp + distance_from_start - distance_from_start_opp) / 2
 
+
     def dfs(self, loc, board, max_length=0, found_opp=False):
         for d in self.directions:
             i = loc[0] + d[0]
@@ -192,3 +173,30 @@ class MinimaxPlayer():
                 elif board[i][j] == 2:
                     found_opp = True
         return max_length, found_opp
+
+    def steps_available(self):
+        num_steps_available = 0
+        num_steps_available_opp = 0
+        for d in self.directions:
+            i = self.loc[0] + d[0]
+            j = self.loc[1] + d[1]
+            if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and self.board[i][j] == 0:  # then move is legal
+                num_steps_available += 1
+
+            i = self.rival_position[0] + d[0]
+            j = self.rival_position[1] + d[1]
+            if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and self.board[i][j] == 0:  # then move is legal
+                num_steps_available_opp += 1
+
+        return num_steps_available, num_steps_available_opp
+
+    def is_final(self, my_turn):
+        steps, steps_opp = self.steps_available()
+        # end of game
+        if steps == steps_opp == 0:
+            return True, 0
+        if my_turn and steps == 0:
+            return True, -1
+        if not my_turn and steps_opp == 0:
+            return True, 1
+        return False, 0

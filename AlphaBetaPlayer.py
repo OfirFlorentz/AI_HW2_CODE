@@ -4,9 +4,12 @@ from MinimaxPlayer import MinimaxPlayer
 
 class AlphaBetaPlayer(MinimaxPlayer):
 
-    def rb_minmax(self, depth, time_left, board, my_turn=True, alpha=-2, beta=2):
+    def rb_minmax(self, depth, time_left, board, my_turn=True, alpha=float('-inf'), beta=float('inf')):
         start = _time()
         assert self.count_players(board) == (1,1)
+        is_final, score = self.is_final(my_turn)
+        if is_final:  # no move left
+            return None, score, None
         if depth == 0:
             return None, self.state_score(my_turn, board), None
 
