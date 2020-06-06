@@ -7,7 +7,7 @@ class AlphaBetaPlayer(MinimaxPlayer):
     def rb_minmax(self, depth, time_left, board, my_turn=True, alpha=float('-inf'), beta=float('inf')):
         start = _time()
         assert self.count_players(board) == (1,1)
-        is_final, score = self.is_final(my_turn)
+        is_final, score = self.is_final(my_turn, board)
         if is_final:  # no move left
             return None, score, None
         if depth == 0:

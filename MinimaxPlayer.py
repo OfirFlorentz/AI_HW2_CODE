@@ -71,7 +71,7 @@ class MinimaxPlayer():
     def rb_minmax(self, depth, time_left, board, my_turn=True):
         start = _time()
         assert self.count_players(board) == (1,1)
-        is_final, score = self.is_final(my_turn)
+        is_final, score = self.is_final(my_turn, board)
         if is_final:  # no move left
             return None, score, None
         if depth == 0:
@@ -98,15 +98,16 @@ class MinimaxPlayer():
                     board[new_loc] = 0
                     if score > max_score or max_score == float('-inf'):
                         best_move, max_score, best_new_loc = d, score, new_loc
-                        # print(best_move, max_score, best_new_loc)
+
+
             self.loc = prev_loc
             board[self.loc] = 1
+            assert (max_score <= 1 and max_score >= -1)
             return best_move, max_score, best_new_loc
 
 
         else:
             best_move, min_score, best_new_loc = None, float('inf'), None
-            prev_loc = self.rival_position
             prev_loc = self.rival_position
             board[prev_loc] = -1
             for d in self.directions:
@@ -116,17 +117,17 @@ class MinimaxPlayer():
                 j = prev_loc[1] + d[1]
                 if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                     new_loc = (i, j)
-                    # print('prev loc', prev_loc, 'new_loc:', new_loc, 'move:', (i, j))
                     assert board[new_loc] == 0
                     self.rival_position = new_loc
                     board[new_loc] = 2
                     self.available -= 1
                     _, score, _ = self.rb_minmax(depth-1, time_left -_time() + start, board, 1-my_turn)
                     self.available += 1
-                    # print(score)
                     board[new_loc] = 0
+
                     if score < min_score or min_score == float('inf'):
                         best_move, min_score, best_new_loc = d, score, new_loc
+
             self.rival_position = prev_loc
             board[self.rival_position] = 2
             return best_move, min_score, best_new_loc
@@ -142,11 +143,10 @@ class MinimaxPlayer():
         # cant block each other, the one who have more steps win
         if not found_opp:
             if available_steps > available_steps_opp + int(my_turn):
-                return 0.99 + (available_steps - available_steps_opp) / (self.board.size * self.board.size * 100)
+                return 0.99 + (available_steps) / (self.board.size * self.board.size * 100)
             elif available_steps + int(not my_turn) < available_steps_opp:
-                return -0.99 + (available_steps - available_steps_opp) / (self.board.size * self.board.size * 100)
+                return -0.99 - (available_steps_opp) / (self.board.size * self.board.size * 100)
             return 0
-
 
         # norm
         distance_from_start = distance_from_start / (2*len(board))
@@ -155,10 +155,7 @@ class MinimaxPlayer():
         available_steps = available_steps / (self.available + 0.001)
         available_steps_opp = available_steps_opp / (self.available + 0.001)
 
-
-
         return (available_steps - available_steps_opp + distance_from_start - distance_from_start_opp) / 2
-
 
     def dfs(self, loc, board, max_length=0, found_opp=False):
         for d in self.directions:
@@ -174,24 +171,24 @@ class MinimaxPlayer():
                     found_opp = True
         return max_length, found_opp
 
-    def steps_available(self):
+    def steps_available(self, board):
         num_steps_available = 0
         num_steps_available_opp = 0
         for d in self.directions:
             i = self.loc[0] + d[0]
             j = self.loc[1] + d[1]
-            if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and self.board[i][j] == 0:  # then move is legal
+            if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                 num_steps_available += 1
 
             i = self.rival_position[0] + d[0]
             j = self.rival_position[1] + d[1]
-            if 0 <= i < len(self.board) and 0 <= j < len(self.board[0]) and self.board[i][j] == 0:  # then move is legal
+            if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                 num_steps_available_opp += 1
 
         return num_steps_available, num_steps_available_opp
 
-    def is_final(self, my_turn):
-        steps, steps_opp = self.steps_available()
+    def is_final(self, my_turn, board):
+        steps, steps_opp = self.steps_available(board)
         # end of game
         if steps == steps_opp == 0:
             return True, 0

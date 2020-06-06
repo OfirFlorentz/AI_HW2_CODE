@@ -40,7 +40,7 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
         start = _time()
         assert self.count_players(board) == (1,1)
         
-        is_final, score = self.is_final(my_turn)
+        is_final, score = self.is_final(my_turn, board)
         if is_final:  # no move left
             return None, score, None, None
         if depth == 0:

@@ -74,7 +74,7 @@ class NotAnimatedGame:
                 move = self.players[player_index].make_move(self.time_to_make_a_move)
                 end = time.time()
                 diff = end - start
-                if diff > self.time_to_make_a_move and False:
+                if diff > self.time_to_make_a_move:
                     print()
                     print('####################')
                     print('####################')
