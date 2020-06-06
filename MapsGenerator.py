@@ -147,6 +147,63 @@ trick_map = [size, blocks, starts]
 
 board = \
 [
+    [-1, -1, -1, -1, -1, -1, -1,  0,  0,  0],
+    [-1, -1, -1, -1, -1, -1, -1,  0,  0,  0],
+    [-1, -1, -1, -1, -1, -1, -1,  0,  0,  0],
+    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+    [-1, -1, -1, -1, -1, -1, -1,  0,  0,  0],
+    [-1, -1, -1, -1, -1, -1, -1,  0,  0,  0],
+    [-1, -1, -1, -1, -1, -1, -1,  0,  0,  0],
+ ]
+
+board = reflect(board, 'horizontal')
+size, blocks, _ = get_board_data(board)
+starts = [(4, 0), (4, 19)]
+test_map1 = [size, blocks, starts]
+
+#########################
+
+board = \
+[
+    [-1, -1, -1, -1,  0],
+    [-1, -1, -1,  0,  0],
+    [-1, -1,  0,  0,  0],
+    [-1,  0,  0,  0,  0],
+    [ 0,  0,  0,  0,  0],
+    [-1,  0,  0,  0,  0],
+    [-1, -1,  0,  0,  0],
+    [-1, -1, -1,  0,  0],
+    [-1, -1, -1, -1,  0],
+ ]
+
+board = reflect(board, 'horizontal')
+size, blocks, _ = get_board_data(board)
+starts = [(4, 0), (4, 9)]
+test_map2 = [size, blocks, starts]
+
+#########################
+
+board = \
+[
+    [ 0,  0,  0,  0, -1],
+    [ 0,  0,  0,  0, -1],
+    [ 0,  0,  0,  0, -1],
+    [ 0,  0,  0,  0, -1],
+    [ 0,  0,  0,  0, -1],
+    [ 0,  0,  0,  0, -1],
+ ]
+
+board = reflect(board, 'horizontal')
+size, blocks, _ = get_board_data(board)
+starts = [(2, 0), (2, 9)]
+test_map3 = [size, blocks, starts]
+
+#########################
+
+board = \
+[
     [ 0,  0,  0],
     [ 0,  0,  0],
     [ 0,  0,  0],
@@ -160,4 +217,4 @@ size, blocks, _ = get_board_data(board)
 starts = [(4, 1), (4, 4)]
 small_map = [size, blocks, starts]
 
-maps = [small_map, diag_map, tunnels_map, trick_map, ai_map]
+maps = [small_map, diag_map, tunnels_map, trick_map, ai_map, test_map1, test_map2, test_map3]
