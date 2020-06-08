@@ -44,10 +44,10 @@ class MinimaxPlayer():
         return (counter1, counter2)
 
     def make_move(self, time):  # time parameter is not used, we assume we have enough time.
-        depth = 7
+        depth = 1
         ID_start_time = _time()
         # time = float('inf')
-        while(depth < 8):
+        while(True):
             copy_self = copy.deepcopy(self)
             assert self.count_players(self.board) == (1,1)
             try:
@@ -158,19 +158,13 @@ class MinimaxPlayer():
                 max_steps_opp_2 = self.longest(self.rival_position, copy.deepcopy(board), directions)
                 max_steps = max(max_steps, max_steps_2)
                 max_steps_opp = max(max_steps_opp, max_steps_opp_2)
-
-
-            '''
-            if max_steps > max_steps_opp + int(my_turn):
-                return 0.99 + (max_steps) / (self.available * 100)
-            elif max_steps + int(not my_turn) < max_steps_opp:
-                return -0.99 - (max_steps_opp) / (self.available * 100)
-            return 0
-            '''
+            print (max_steps, max_steps_opp,  self.available)
             return (max_steps - max_steps_opp) / self.available
+
         else:
         # norm
             closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
+            print
             return (closer * 4 + distance_from_start - distance_from_start_opp) / 5
 
     def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
@@ -234,9 +228,9 @@ class MinimaxPlayer():
     def closer(board1, board2):
         counter = 0
         for i in range(len(board1)):
-            for j in range (len(board1[1])):
+            for j in range(len(board1[1])):
                 if board1[i][j] < board2[i][j]:
                     counter += 1
-                else:
+                elif board1[i][j] > board2[i][j]:
                     counter -= 1
         return counter
