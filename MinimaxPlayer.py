@@ -1,6 +1,7 @@
 from time import time as _time
 import copy
-
+import numpy as np
+import random
 
 class MinimaxPlayer():
     def __init__(self):
@@ -43,23 +44,23 @@ class MinimaxPlayer():
         return (counter1, counter2)
 
     def make_move(self, time):  # time parameter is not used, we assume we have enough time.
-        depth = 1
+        depth = 7
         ID_start_time = _time()
-        while(True):
+        # time = float('inf')
+        while(depth < 8):
             copy_self = copy.deepcopy(self)
             assert self.count_players(self.board) == (1,1)
             try:
-                best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05,
+                best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05 ,
                                                                           copy.deepcopy(self.board))
             except TimeoutError:
                 break
             assert self.count_players(self.board) == (1, 1)
             depth += 1
-
+        print('new', depth)
         if best_move is None:
             # print(self.board)
             exit()
-
         self.board[best_new_loc] = 1
         self.board[self.loc] = -1
         self.loc = best_new_loc
@@ -133,43 +134,74 @@ class MinimaxPlayer():
             return best_move, min_score, best_new_loc
 
     def state_score(self, my_turn, board):
+        zero_board_1 = np.zeros([len(self.board), len(self.board[0])])
+        zero_board_2 = np.zeros([len(self.board), len(self.board[0])])
+
         # get params
         distance_from_start = abs(self.starting_position[0] - self.loc[0]) + abs(self.starting_position[1] - self.loc[1])
         distance_from_start_opp = abs(self.rival_starting_position[0] - self.rival_position[0])\
                                   + abs(self.rival_starting_position[1] - self.rival_position[1])
-        available_steps, found_opp = self.dfs(self.loc, copy.deepcopy(board))
-        available_steps_opp, _ = self.dfs(self.rival_position, copy.deepcopy(board))
+        available_steps, found_opp = self.bfs(copy.deepcopy(board), zero_board_1, [self.loc])
+        available_steps_opp, _ = self.bfs(copy.deepcopy(board), zero_board_2, [self.rival_position])
 
         # cant block each other, the one who have more steps win
         if not found_opp:
-            if available_steps > available_steps_opp + int(my_turn):
-                return 0.99 + (available_steps) / (self.board.size * self.board.size * 100)
-            elif available_steps + int(not my_turn) < available_steps_opp:
-                return -0.99 - (available_steps_opp) / (self.board.size * self.board.size * 100)
+            directions = copy.deepcopy(self.directions)
+            random.shuffle(directions)
+            max_steps = self.longest(self.loc, copy.deepcopy(board), directions)
+            max_steps_opp = self.longest(self.rival_position, copy.deepcopy(board), directions)
+
+
+            if (max_steps_opp/(max_steps_opp + 0.01)) < 2 and (max_steps_opp/(max_steps + 0.01))< 2:
+                directions.reverse()
+                max_steps_2 = self.longest(self.loc, copy.deepcopy(board), directions)
+                max_steps_opp_2 = self.longest(self.rival_position, copy.deepcopy(board), directions)
+                max_steps = max(max_steps, max_steps_2)
+                max_steps_opp = max(max_steps_opp, max_steps_opp_2)
+
+
+            '''
+            if max_steps > max_steps_opp + int(my_turn):
+                return 0.99 + (max_steps) / (self.available * 100)
+            elif max_steps + int(not my_turn) < max_steps_opp:
+                return -0.99 - (max_steps_opp) / (self.available * 100)
             return 0
-
+            '''
+            return (max_steps - max_steps_opp) / self.available
+        else:
         # norm
-        distance_from_start = distance_from_start / (2*len(board))
-        distance_from_start_opp = distance_from_start_opp / (2*len(board))
+            closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
+            return (closer * 4 + distance_from_start - distance_from_start_opp) / 5
 
-        available_steps = available_steps / (self.available + 0.001)
-        available_steps_opp = available_steps_opp / (self.available + 0.001)
+    def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
+        if loc_q == []:
+            return counter, found_opp
+        new_q = []
+        for loc in loc_q:
+            loc_q = loc_q[1:]
+            for d in self.directions:
+                i = loc[0] + d[0]
+                j = loc[1] + d[1]
+                if 0 <= i < len(board) and 0 <= j < len(board[0]):
+                    if board[i][j] == 0:  # then move is legal
+                        board[i][j] = -1
+                        new_q.append((i, j))
+                        counter += 1
+                        if zero_board[i][j] == 0:
+                            zero_board[i][j] = depth
+                    elif board[i][j] == 2:
+                        found_opp = True
+        return self.bfs(board, zero_board, new_q,  counter=counter, depth=depth+1, found_opp=found_opp)
 
-        return (available_steps - available_steps_opp + distance_from_start - distance_from_start_opp) / 2
-
-    def dfs(self, loc, board, max_length=0, found_opp=False):
-        for d in self.directions:
+    def longest(self, loc, board, directions, max_length=0):
+        for d in directions:
             i = loc[0] + d[0]
             j = loc[1] + d[1]
             if 0 <= i < len(board) and 0 <= j < len(board[0]):
                 if board[i][j] == 0:  # then move is legal
                     board[i][j] = -1
-                    length, found = self.dfs((i,j), board, found_opp)
-                    max_length = max(max_length,1 + length)
-                    found_opp = found_opp or found
-                elif board[i][j] == 2:
-                    found_opp = True
-        return max_length, found_opp
+                    max_length = max(max_length, 1 + self.longest((i,j), board, directions))
+        return max_length
 
     def steps_available(self, board):
         num_steps_available = 0
@@ -184,7 +216,6 @@ class MinimaxPlayer():
             j = self.rival_position[1] + d[1]
             if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                 num_steps_available_opp += 1
-
         return num_steps_available, num_steps_available_opp
 
     def is_final(self, my_turn, board):
@@ -197,3 +228,15 @@ class MinimaxPlayer():
         if not my_turn and steps_opp == 0:
             return True, 1
         return False, 0
+
+
+    @staticmethod
+    def closer(board1, board2):
+        counter = 0
+        for i in range(len(board1)):
+            for j in range (len(board1[1])):
+                if board1[i][j] < board2[i][j]:
+                    counter += 1
+                else:
+                    counter -= 1
+        return counter

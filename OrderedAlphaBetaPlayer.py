@@ -23,11 +23,12 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
                 break
             assert self.count_players(self.board) == (1, 1)
             depth += 1
-
+        print('depth:', depth)
         if best_move is None:
             # print(self.board)
             exit()
 
+        print('score:', best_move_score)
         self.board[best_new_loc] = 1
         self.board[self.loc] = -1
         self.loc = best_new_loc
