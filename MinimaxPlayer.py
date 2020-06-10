@@ -158,14 +158,14 @@ class MinimaxPlayer():
                 max_steps_opp_2 = self.longest(self.rival_position, copy.deepcopy(board), directions)
                 max_steps = max(max_steps, max_steps_2)
                 max_steps_opp = max(max_steps_opp, max_steps_opp_2)
-            print (max_steps, max_steps_opp,  self.available)
+
             return (max_steps - max_steps_opp) / self.available
 
         else:
         # norm
             closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
-            print
-            return (closer * 4 + distance_from_start - distance_from_start_opp) / 5
+            return closer
+            return (closer * 6 + distance_from_start - distance_from_start_opp) / 7
 
     def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
         if loc_q == []:
