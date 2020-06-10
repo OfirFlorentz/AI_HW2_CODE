@@ -34,9 +34,7 @@ class SimplePlayer:
         return counter
 
     def make_move(self, time):  # time parameter is not used, we assume we have enough time.
-
         assert self.count_ones(self.board) == 1
-
         prev_loc = self.loc
         self.board[prev_loc] = -1
 

@@ -164,7 +164,6 @@ class MinimaxPlayer():
         else:
         # norm
             closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
-            return closer
             return (closer * 6 + distance_from_start - distance_from_start_opp) / 7
 
     def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
