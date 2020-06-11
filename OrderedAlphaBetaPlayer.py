@@ -15,13 +15,11 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
         ID_start_time = _time()
         while (True):
             copy_self = copy.deepcopy(self)
-            assert self.count_players(self.board) == (1,1)
             try:
-                best_move, best_move_score, best_new_loc, self.score_dict = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05,
+                best_move, best_move_score, best_new_loc, self.score_dict = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.1,
                                                                           copy.deepcopy(self.board))
             except TimeoutError:
                 break
-            assert self.count_players(self.board) == (1, 1)
             depth += 1
         print('depth:', depth)
         if best_move is None:
@@ -39,8 +37,7 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
 
     def rb_minmax(self, depth, time_left, board, my_turn=True, alpha=float('-inf'), beta=float('inf'), isRoot=True):
         start = _time()
-        assert self.count_players(board) == (1,1)
-        
+
         is_final, score = self.is_final(my_turn, board)
         if is_final:  # no move left
             return None, score, None, None
@@ -66,18 +63,15 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
                 if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                     new_loc = (i, j)
                     # print('prev loc', prev_loc, 'new_loc:', new_loc, 'move:', (i, j))
-                    assert board[new_loc] == 0
                     board[new_loc] = 1
                     self.loc = new_loc
                     self.available -= 1
                     _, score, _, _ = self.rb_minmax(depth-1,  time_left - _time() + start, board, 1-my_turn, alpha, beta, False)
                     score_dict[d] = score
                     self.available += 1
-                    assert self.count_players(board) == (1,1)
                     board[new_loc] = 0
                     if score > max_score or max_score == -2:
                         best_move, max_score, best_new_loc = d, score, new_loc
-                        # print(best_move, max_score, best_new_loc)
                     alpha = max([alpha, max_score])
                     if score>=beta:
                         max_score=1
@@ -101,8 +95,6 @@ class OrderedAlphaBetaPlayer(AlphaBetaPlayer):
                 j = prev_loc[1] + d[1]
                 if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                     new_loc = (i, j)
-                    # print('prev loc', prev_loc, 'new_loc:', new_loc, 'move:', (i, j))
-                    assert board[new_loc] == 0
                     self.rival_position = new_loc
                     board[new_loc] = 2
                     self.available -= 1

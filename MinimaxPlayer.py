@@ -49,29 +49,23 @@ class MinimaxPlayer():
         # time = float('inf')
         while(True):
             copy_self = copy.deepcopy(self)
-            assert self.count_players(self.board) == (1,1)
             try:
-                    best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05 ,
+                    best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.1 ,
                                                                           copy.deepcopy(self.board))
             except TimeoutError:
                 break
-            assert self.count_players(self.board) == (1, 1)
             depth += 1
-        print('new', depth)
         if best_move is None:
-            # print(self.board)
             exit()
         self.board[best_new_loc] = 1
         self.board[self.loc] = -1
         self.loc = best_new_loc
         self.available -= 2
 
-        # print('returning move', best_move)
         return best_move
 
     def rb_minmax(self, depth, time_left, board, my_turn=True):
         start = _time()
-        assert self.count_players(board) == (1,1)
         is_final, score = self.is_final(my_turn, board)
         if is_final:  # no move left
             return None, score, None
@@ -88,14 +82,11 @@ class MinimaxPlayer():
                 j = prev_loc[1] + d[1]
                 if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                     new_loc = (i, j)
-                    # print('prev loc', prev_loc, 'new_loc:', new_loc, 'move:', (i, j))
-                    assert board[new_loc] == 0
                     board[new_loc] = 1
                     self.loc = new_loc
                     self.available -= 1
                     _, score, _ = self.rb_minmax(depth=depth-1,  time_left=time_left - _time() + start, board= board, my_turn=1-my_turn)
                     self.available += 1
-                    assert self.count_players(board) == (1,1)
                     board[new_loc] = 0
                     if score > max_score or max_score == float('-inf'):
                         best_move, max_score, best_new_loc = d, score, new_loc
@@ -103,7 +94,6 @@ class MinimaxPlayer():
 
             self.loc = prev_loc
             board[self.loc] = 1
-            assert (max_score <= 1 and max_score >= -1)
             return best_move, max_score, best_new_loc
 
 
@@ -118,7 +108,6 @@ class MinimaxPlayer():
                 j = prev_loc[1] + d[1]
                 if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0:  # then move is legal
                     new_loc = (i, j)
-                    assert board[new_loc] == 0
                     self.rival_position = new_loc
                     board[new_loc] = 2
                     self.available -= 1
@@ -164,7 +153,7 @@ class MinimaxPlayer():
         else:
         # norm
             closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
-            norm_distance = (distance_from_start - distance_from_start_opp) / (len(self.board) * len(self.board[0]))
+            norm_distance = (distance_from_start - distance_from_start_opp) / (len(self.board) + len(self.board[0]))
             return (closer * 6 + norm_distance) / 7
 
     def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
