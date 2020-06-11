@@ -155,6 +155,68 @@ class MinimaxPlayer():
             closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
             norm_distance = (distance_from_start - distance_from_start_opp) / (len(self.board) + len(self.board[0]))
             return (closer * 6 + norm_distance) / 7
+    
+    def lite_score(self, my_turn, board):
+        found=[]
+        num, new, new_temp = 0, [self.loc], []
+        num_opp, new_opp, new_opp_temp = 0, [self.rival_position], []
+        
+        if my_turn:
+        
+            while len(new)>0 or len(new_opp)>0:
+                for loc in new:
+                    for d in self.directions:
+                        i = loc[0] + d[0]
+                        j = loc[1] + d[1]
+                        if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0 and (i,j) not in found:  # then move is legal
+                            num += 1
+                            new_temp.append ((i,j))
+                            found.append ((i,j))
+                            
+                for loc in new_opp:
+                    for d in self.directions:
+                        i = loc[0] + d[0]
+                        j = loc[1] + d[1]
+                        if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0 and (i,j) not in found:  # then move is legal
+                            num_opp += 1
+                            new_opp_temp.append ((i,j))
+                            found.append ((i,j))
+                
+                new=new_temp
+                new_temp=[]
+                new_opp=new_opp_temp
+                new_opp_temp=[]
+            
+            return num/(num+num_opp)
+        
+        else:
+            
+            while len(new)>0 or len(new_opp)>0:
+                                           
+                for loc in new_opp:
+                    for d in self.directions:
+                        i = loc[0] + d[0]
+                        j = loc[1] + d[1]
+                        if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0 and (i,j) not in found:  # then move is legal
+                            num_opp += 1
+                            new_opp_temp.append ((i,j))
+                            found.append ((i,j))
+                
+                for loc in new:
+                    for d in self.directions:
+                        i = loc[0] + d[0]
+                        j = loc[1] + d[1]
+                        if 0 <= i < len(board) and 0 <= j < len(board[0]) and board[i][j] == 0 and (i,j) not in found:  # then move is legal
+                            num += 1
+                            new_temp.append ((i,j))
+                            found.append ((i,j))
+                
+                new=new_temp
+                new_temp=[]
+                new_opp=new_opp_temp
+                new_opp_temp=[]
+            
+            return num/(num+num_opp)
 
     def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
         if loc_q == []:
