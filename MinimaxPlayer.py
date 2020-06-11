@@ -51,7 +51,7 @@ class MinimaxPlayer():
             copy_self = copy.deepcopy(self)
             assert self.count_players(self.board) == (1,1)
             try:
-                best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05 ,
+                    best_move, best_move_score, best_new_loc = copy_self.rb_minmax(depth, time - _time() + ID_start_time - 0.05 ,
                                                                           copy.deepcopy(self.board))
             except TimeoutError:
                 break
@@ -164,7 +164,8 @@ class MinimaxPlayer():
         else:
         # norm
             closer = self.closer(zero_board_1, zero_board_2) / (self.available + 0.001)
-            return (closer * 6 + distance_from_start - distance_from_start_opp) / 7
+            norm_distance = (distance_from_start - distance_from_start_opp) / (len(self.board) * len(self.board[0]))
+            return (closer * 6 + norm_distance) / 7
 
     def bfs(self, board, zero_board, loc_q,  counter=0, depth=1, found_opp=False):
         if loc_q == []:
